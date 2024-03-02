@@ -28,12 +28,34 @@ exports.login = async (req, res) => {
       return res.status(401).json({ error: "Senha incorreta" });
     }
     const token = jwt.sign({ userName: user.userName }, process.env.JWT_SECRET);
-
+   
     res.cookie("token", token, { httpOnly: true });
 
     res.status(200).json({ message: "Login bem-sucedido" });
   } catch (error) {
     res.status(500).json({ erro: "Erro ao entrar" });
+  }
+};
+
+exports.getUserData = async (req, res) => {
+  try {
+    const token = req.cookies.token;
+
+    if (!token) {
+      return res.status(401).json({ error: "Token não encontrado" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await User.findById(decoded.userId).exec();
+
+    if (!user) {
+      return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+
+    res.status(200).json({ userData: user });
+  } catch (error) {
+    res.status(401).json({ error: "Token inválido" });
   }
 };
 
@@ -133,8 +155,9 @@ exports.updateUserRole = async (req, res) => {
 
 exports.getUserProductHistory = async (req, res) => {
   try {
-    const productHistory = await User.findById(req.params.userId).productHistory;
-    if(!productHistory){
+    const productHistory = await User.findById(req.params.userId)
+      .productHistory;
+    if (!productHistory) {
       return res.status(404).json({ erro: "Usuário não encontrado" });
     }
     res.status(200).json(productHistory);

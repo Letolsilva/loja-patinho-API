@@ -4,6 +4,8 @@ const userController = require("../controllers/userController");
 
 //Acessa usuario
 router.post("/login", userController.login);
+//Acessa usuario com token
+router.get("/getUser",userController.authenticator, userController.getUserData );
 //registra usuario
 router.post("/register", userController.createUser);
 // recebe um usuario
